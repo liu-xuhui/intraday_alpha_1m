@@ -221,7 +221,7 @@ $$ mid_{i,\tau} = \frac{bidpx1_{i,\tau} + askpx1_{i,\tau}}{2}, \qquad \text{vali
 `t`** — never the last quote before `t`:
 
 $$ 
-P_i(t) = mid_{i,\tau^*}, \qquad \tau^* = \min\{\tau : \tau \ge t,\ \tau \le t + \delta,\ \text{quote valid}\}
+P_i(t) = mid_{i,\tau^\star}, \qquad \tau^\star = \min\{\tau : \tau \ge t,\ \tau \le t + \delta,\ \text{quote valid}\}
 $$
 
 with a configurable staleness tolerance `MAX_QUOTE_DELAY_SECONDS = 5`. If the first quote at or after `t` arrives more
