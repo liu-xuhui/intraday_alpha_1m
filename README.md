@@ -220,7 +220,9 @@ $$ mid_{i,\tau} = \frac{bidpx1_{i,\tau} + askpx1_{i,\tau}}{2}, \qquad \text{vali
 **As-of-next price lookup.** For a boundary time `t`, the price is taken from the **earliest valid quote at or after
 `t`** — never the last quote before `t`:
 
-$$ P_i(t) = mid_{i,\tau^*}, \qquad \tau^* = \min\{\tau : \tau \ge t,\ \tau \le t + \delta,\ \text{quote valid}\} $$
+$$ 
+P_i(t) = mid_{i,\tau^*}, \qquad \tau^* = \min\{\tau : \tau \ge t,\ \tau \le t + \delta,\ \text{quote valid}\}
+$$
 
 with a configurable staleness tolerance `MAX_QUOTE_DELAY_SECONDS = 5`. If the first quote at or after `t` arrives more
 than 5 seconds late, the price is `NaN` rather than stale. Since quotes arrive every ~3 seconds this rarely binds
@@ -247,15 +249,6 @@ index and columns exactly, element for element.
 
 The single most important property of this pipeline is that a factor at time `t` cannot see anything the target at
 time `t` depends on.
-
-```text
-          factor information                         target measurement
-     |<------ [t - W, t) ------>|                |<------ h = 1 minute ------>|
------+--------------------------+----------------+----------------------------+-----
-   t - W                        t          first valid quote            first valid quote
-                          (prediction time)      >= t                      >= t + h
-                                            (within 5s)                  (within 5s)
-```
 
 - **Factor side:** every event used satisfies `t - W <= event_time < t`. The upper bound is *strict* — an order or
   trade stamped exactly at `t` is excluded.
