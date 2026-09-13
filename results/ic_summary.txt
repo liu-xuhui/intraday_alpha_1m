@@ -1,0 +1,23 @@
+Cross-sectional IC report
+==========================================================================================================
+Target: data/target_return_1min.pkl  shape=(203, 500)
+Prediction timestamps: 2026-08-20 09:30:00 .. 2026-08-28 09:58:00
+IC = per-minute cross-sectional Pearson correlation between factor and
+the next-minute forward mid-price return. ICIR = mean(IC)/std(IC),
+t_stat = ICIR * sqrt(n_ic). RankIC = Spearman equivalent.
+==========================================================================================================
+factor                            n_ic   mean_IC   std_IC    ICIR  t_stat   %IC>0  mean_RankIC  avg_stocks
+----------------------------------------------------------------------------------------------------------
+ati_count_30s                      196    0.0089   0.0821   0.109    1.52    59.7       0.0003       479.6
+ati_count_60s                      196   -0.0003   0.1001  -0.003   -0.05    51.5      -0.0111       479.8
+ati_count_90s                      189    0.0002   0.1026   0.002    0.03    51.3      -0.0090       462.6
+ati_volume_30s                     196    0.0156   0.0826   0.189    2.65    60.2       0.0078       479.6
+ati_volume_60s                     196    0.0019   0.1013   0.018    0.26    52.0      -0.0076       479.8
+ati_volume_90s                     189    0.0020   0.1068   0.019    0.26    49.2      -0.0061       462.6
+burst_volume_imbalance_15s         196    0.0123   0.1234   0.100    1.40    54.6       0.0142       419.2
+burst_volume_imbalance_30s         196    0.0029   0.1072   0.028    0.39    55.1       0.0025       457.5
+burst_volume_imbalance_8s          196    0.0156   0.1264   0.123    1.73    56.1       0.0182       366.6
+order_recency_imbalance_15s        196    0.0068   0.0761   0.090    1.26    56.6       0.0085       479.8
+order_recency_imbalance_30s        196    0.0069   0.0761   0.090    1.26    56.6       0.0086       479.8
+----------------------------------------------------------------------------------------------------------
+Largest |mean IC|: ati_volume_30s (+0.0156)

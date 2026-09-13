@@ -1,0 +1,853 @@
+China A-Share Level-2 Sample Data: Field and Category Reference
+=====================================================================
+
+Project context
+---------------
+Project: intraday_alpha_1m
+Sample date: 2026-08-28
+Research window: 09:30-10:00 Asia/Shanghai
+Streams:
+  1. 行情.parquet      -> quote snapshots
+  2. 逐笔委托.parquet -> individual order messages
+  3. 逐笔成交.parquet -> executions and, for Shenzhen, cancellation records
+
+This reference is based on:
+  - the Hugging Face dataset documentation for
+    venvoo/china-a-share-l2-level2-limit-order-book-tick-data;
+  - the observed 2026-08-28 sample output;
+  - public Level-2 interface documentation for interpreting order-type labels.
+
+Important principle:
+Do not assume every raw categorical field has the same meaning across Shanghai
+and Shenzhen. Venue-specific decoding is required.
+
+
+=====================================================================
+1. QUOTE TABLE: 行情.parquet
+=====================================================================
+
+The quote table contains roughly one ten-level snapshot every three seconds per
+security in the regular market sample.
+
+Columns
+-------
+
+wind_code
+    Vendor security identifier, e.g. "000001.SZ" or "600000.SH".
+
+    IMPORTANT:
+    Do not use the .SH/.SZ suffix as a universally reliable exchange identifier
+    for the entire archive. The Hugging Face documentation explicitly warns
+    that some non-stock instruments may have misleading suffixes.
+
+ex_code
+    Bare security code, e.g. "000001".
+    This is a security identifier, NOT an exchange identifier.
+
+date
+    Trading date as uint32 in YYYYMMDD format.
+    Example: 20260828.
+
+time
+    Timestamp in HHMMSSmmm format, in Asia/Shanghai time.
+    Example:
+        93003000 = 09:30:03.000
+        103807810 = 10:38:07.810
+
+price
+    Latest traded price reported at the snapshot.
+
+    For A-share stock prices in this archive:
+        price_CNY = price / 10000
+
+volume
+    Trading volume associated with the current quote-update interval.
+
+    In the observed sample, this is consistent with:
+        volume_t = cum_volume_t - cum_volume_(previous snapshot)
+
+    It should not be interpreted as total daily volume.
+
+amount
+    Trading amount/turnover associated with the current quote-update interval.
+
+    Do NOT automatically divide this field by 10000.
+    The Hugging Face documentation explicitly states that the stock-price
+    scaling rule does not automatically establish the units of amount or other
+    derived fields.
+
+num_trades
+    Vendor-provided trade-count field.
+
+    In the observed sample it increases monotonically and behaves like a
+    cumulative number of trades rather than an interval-only count.
+    Treat this interpretation as sample-supported, not as a universal guarantee,
+    unless validated on each date.
+
+iopv
+    Vendor-provided IOPV-related field.
+    Mainly relevant to ETF-like instruments; generally not needed for ordinary
+    A-share stock research.
+
+trade_flag
+    Raw vendor trade-status/category field.
+
+    In the sampled ordinary A-share stocks from 09:30-10:00:
+        trade_flag = NULL
+
+    No complete category dictionary is provided by the Hugging Face dataset.
+    Recommended treatment for this project: keep raw or ignore.
+
+bs_flag
+    Raw vendor buy/sell-related field at the quote-snapshot level.
+
+    In the sampled ordinary A-share stocks from 09:30-10:00:
+        bs_flag = NULL
+
+    Do not use this quote-level field for trade direction.
+    Use the trade stream instead.
+
+cum_volume
+    Cumulative trading volume from the start of the trading day through the
+    current snapshot.
+
+cum_amount
+    Cumulative trading amount/turnover through the current snapshot.
+
+high
+    Running daily high price through the current snapshot.
+    Divide stock price values by 10000.
+
+low
+    Running daily low price through the current snapshot.
+    Divide stock price values by 10000.
+
+open
+    Daily opening price.
+    Divide stock price values by 10000.
+
+prev_close
+    Previous trading day's closing price.
+    Divide stock price values by 10000.
+
+ask_px1 ... ask_px10
+    Best ask through tenth-best ask price.
+
+    ask_px1 = best ask
+    ask_px2 = second-best ask
+    ...
+    ask_px10 = tenth-best ask
+
+    Divide stock price values by 10000.
+
+ask_vol1 ... ask_vol10
+    Aggregate displayed ask volume at each of the ten ask price levels.
+
+bid_px1 ... bid_px10
+    Best bid through tenth-best bid price.
+
+    bid_px1 = best bid
+    bid_px2 = second-best bid
+    ...
+    bid_px10 = tenth-best bid
+
+    Divide stock price values by 10000.
+
+bid_vol1 ... bid_vol10
+    Aggregate displayed bid volume at each of the ten bid price levels.
+
+wavg_ask_px
+    Vendor/exchange-provided weighted-average ask price.
+
+    Do not assume it is simply the volume-weighted average of the displayed
+    top ten ask levels unless independently verified.
+
+wavg_bid_px
+    Vendor/exchange-provided weighted-average bid price.
+
+    Do not assume it is simply the volume-weighted average of the displayed
+    top ten bid levels unless independently verified.
+
+tot_ask_vol
+    Vendor-provided total ask-side order volume.
+
+tot_bid_vol
+    Vendor-provided total bid-side order volume.
+
+idx_unweighted
+    Index-related field from the vendor schema.
+    Usually irrelevant for ordinary individual-stock research.
+
+n_sym
+    Number-of-securities/index-statistics field.
+    Usually irrelevant for ordinary individual-stock research.
+
+n_up
+    Number of rising securities in the relevant index/statistics context.
+    Usually irrelevant for ordinary individual-stock research.
+
+n_down
+    Number of falling securities in the relevant index/statistics context.
+    Usually irrelevant for ordinary individual-stock research.
+
+n_flat
+    Number of unchanged securities in the relevant index/statistics context.
+    Usually irrelevant for ordinary individual-stock research.
+
+
+Quote categorical mapping observed on 2026-08-28
+-------------------------------------------------
+
+For the ten sampled ordinary A-share stocks from 09:30-10:00:
+
+    market   trade_flag   bs_flag
+    SH       NULL         NULL
+    SZ       NULL         NULL
+
+Therefore these two raw categorical fields can be ignored in the first version
+of the intraday-alpha pipeline.
+
+
+=====================================================================
+2. ORDER TABLE: 逐笔委托.parquet
+=====================================================================
+
+Columns
+-------
+
+wind_code
+    Vendor security identifier.
+
+ex_code
+    Bare security code.
+    Not a venue identifier.
+
+date
+    Trading date in YYYYMMDD format.
+
+time
+    Order-event timestamp in HHMMSSmmm format, Asia/Shanghai.
+
+order_id
+    Vendor/source order-event identifier.
+
+    IMPORTANT:
+    This field may be zero or otherwise not useful as a lifecycle key for some
+    Shenzhen records.
+
+ex_order_id
+    Exchange-side/source order identifier.
+
+    This is the more useful field for linking order messages to the
+    ask_order_id / bid_order_id fields in the trade stream when matching is
+    possible.
+
+order_type
+    Venue-specific order/event category.
+    See the mapping below.
+
+order_code
+    Direction/category code.
+
+    For the ordinary A-share order records used here:
+        B = Buy
+        S = Sell
+
+price
+    Order price.
+
+    For ordinary A-share stock prices:
+        price_CNY = price / 10000
+
+    Some market-order or special-event records may have values that should not
+    be interpreted as an ordinary limit price without checking order_type.
+
+volume
+    Order/event quantity.
+
+
+Order categorical mapping
+-------------------------
+
+SHANGHAI (SH)
+~~~~~~~~~~~~~
+
+Observed on 2026-08-28:
+
+    order_type = A
+        Add / new order message.
+
+    order_type = D
+        Delete / cancellation message.
+
+    order_code = B
+        Buy-side order/event.
+
+    order_code = S
+        Sell-side order/event.
+
+Observed counts in the sample:
+
+    SH  A  B   20,467
+    SH  A  S   15,297
+    SH  D  B    6,147
+    SH  D  S    4,734
+
+Interpretation:
+
+    A + B = new buy-side order message
+    A + S = new sell-side order message
+    D + B = buy-side cancellation/delete message
+    D + S = sell-side cancellation/delete message
+
+Public Shanghai Level-2 documentation also commonly defines:
+    A = add/new order
+    D = delete/cancel order
+    S = state/status message
+
+No SH order_type = S appeared in this 09:30-10:00 stock sample.
+
+IMPORTANT:
+The Hugging Face documentation notes that Shanghai order messages can describe
+the remainder after fills. Therefore an SH "A" message should not automatically
+be assumed to represent an untouched original client order in every lifecycle
+analysis.
+
+
+SHENZHEN (SZ)
+~~~~~~~~~~~~~
+
+Observed on 2026-08-28:
+
+    order_type = 0
+        Limit-order encoding used in this sample.
+
+    order_type = 1
+        Market order.
+
+    order_type = U
+        Own-side-best / best-own-price order
+        ("本方最优").
+
+    order_code = B
+        Buy.
+
+    order_code = S
+        Sell.
+
+Observed counts in the sample:
+
+    SZ  0  B   32,209
+    SZ  0  S   26,971
+    SZ  1  S      118
+    SZ  1  B      111
+    SZ  U  S       33
+
+The absence or low frequency of a category in this small sample does not imply
+that the category cannot occur.
+
+VERY IMPORTANT HISTORICAL COMPATIBILITY RULE:
+
+The Hugging Face dataset documentation explicitly warns that Shenzhen limit
+orders are represented by BOTH:
+
+    order_type IN ('0', '2')
+
+across the historical archive.
+
+Therefore, for a general historical limit-order filter, use:
+
+    order_type IN ('0', '2')
+
+rather than:
+
+    order_type == '0'
+
+The documentation gives examples where a '0'-only filter would remove an entire
+session, and it notes that the encoding can even change within a trading day on
+some historical dates.
+
+Shenzhen cancellations are NOT identified as order_type='D' in the order table.
+They are stored in the TRADE stream with:
+
+    trade_code = 'C'
+
+
+=====================================================================
+3. TRADE TABLE: 逐笔成交.parquet
+=====================================================================
+
+Columns
+-------
+
+wind_code
+    Vendor security identifier.
+
+ex_code
+    Bare security code.
+    Not an exchange identifier.
+
+date
+    Trading date in YYYYMMDD format.
+
+time
+    Trade/event timestamp in HHMMSSmmm format, Asia/Shanghai.
+
+trade_id
+    Source trade/event sequence identifier.
+
+    It is not an investor, broker, or account identifier and should not be
+    assumed globally unique outside the relevant date/security context.
+
+trade_code
+    Raw trade-stream event-type code.
+
+    This field is venue-dependent.
+    The critical confirmed rule is:
+
+        Shenzhen:
+            trade_code = 'C'  -> cancellation record
+
+    In the observed Shenzhen sample:
+            trade_code = '0'  -> ordinary execution-like record
+
+    For robust historical code, it is safer to identify Shenzhen cancellations
+    explicitly with trade_code == 'C' and validate other codes by date, rather
+    than assuming that only '0' can ever represent executions.
+
+    Shanghai cancellations are not carried here; Shanghai cancellations are in
+    the ORDER stream as order_type='D'.
+
+order_code
+    Independent raw vendor/source code in the trade table.
+
+    IMPORTANT:
+    Do not assume this has the same interpretation as order.order_code.
+
+    In the observed Shenzhen sample this field was '0'.
+    The Hugging Face documentation does not provide a complete cross-market
+    category dictionary for this field.
+
+    Recommended treatment:
+        preserve raw;
+        do not use it as the primary trade-direction variable without additional
+        validation.
+
+bs_flag
+    Raw buy/sell direction flag associated with the trade record.
+
+    In the observed normal execution records:
+        B = buy-side / buyer-initiated-looking execution
+        S = sell-side / seller-initiated-looking execution
+
+    In observed Shenzhen cancellation records:
+        bs_flag is empty.
+
+    Because the vendor archive does not provide a complete cross-market formal
+    dictionary for this field, a conservative description is:
+
+        B / S = vendor-provided trade-side or aggressor-side flag
+
+    For this research project, it is reasonable to use B/S for signed trade
+    flow after verifying the same mapping on the selected dates and stocks.
+
+price
+    Record price.
+
+    For ordinary execution records:
+        price_CNY = price / 10000
+
+    Do not interpret the price field of a cancellation record as a normal
+    execution price.
+
+volume
+    Record quantity.
+
+    For an execution record:
+        executed quantity.
+
+    For a Shenzhen cancellation record:
+        cancelled quantity.
+
+ask_order_id
+    Sell-side / ask-side order identifier associated with the event.
+
+    For a normal execution, identifies the sell-side order when available.
+
+    For a Shenzhen cancellation:
+        if ask_order_id > 0 and bid_order_id == 0,
+        the cancellation is naturally interpreted as ask/sell-side.
+
+bid_order_id
+    Buy-side / bid-side order identifier associated with the event.
+
+    For a normal execution, identifies the buy-side order when available.
+
+    For a Shenzhen cancellation:
+        if bid_order_id > 0 and ask_order_id == 0,
+        the cancellation is naturally interpreted as bid/buy-side.
+
+
+Trade categorical mapping: recommended interpretation
+------------------------------------------------------
+
+SHANGHAI
+~~~~~~~~
+
+Confirmed structural rule:
+
+    Cancellations are NOT taken from the trade table.
+    Shanghai cancellations are in:
+        逐笔委托.parquet
+        order_type = 'D'
+
+Therefore the Shanghai trade stream should primarily be treated as an execution
+stream for this project.
+
+The exact meanings of every possible raw SH trade_code / order_code / bs_flag
+combination are not fully documented by the Hugging Face dataset card.
+Do not invent additional mappings without checking the actual selected-date
+categories.
+
+SHENZHEN
+~~~~~~~~
+
+Confirmed rule:
+
+    trade_code = 'C'
+        Cancellation record.
+
+Observed normal trade rule on 2026-08-28:
+
+    trade_code = '0'
+        Normal execution-like record.
+
+For ordinary executions in the observed sample:
+
+    bs_flag = 'B'
+        Vendor-provided buy-side / buyer-initiated direction.
+
+    bs_flag = 'S'
+        Vendor-provided sell-side / seller-initiated direction.
+
+For cancellation records:
+
+    trade_code = 'C'
+    bs_flag is empty
+    price may be zero or otherwise not an ordinary transaction price
+    volume is cancellation quantity
+
+Cancellation side can often be identified from the order-ID fields:
+
+    ask_order_id > 0 and bid_order_id == 0
+        -> ask/sell-side cancellation
+
+    bid_order_id > 0 and ask_order_id == 0
+        -> bid/buy-side cancellation
+
+
+=====================================================================
+4. MOST IMPORTANT SH vs SZ DIFFERENCE
+=====================================================================
+
+The cancellation logic must be venue-specific.
+
+SHANGHAI
+--------
+
+Use the ORDER stream:
+
+    order_type = 'D'
+
+Examples:
+
+    order_type='D', order_code='B'
+        buy-side cancellation
+
+    order_type='D', order_code='S'
+        sell-side cancellation
+
+
+SHENZHEN
+--------
+
+Use the TRADE stream:
+
+    trade_code = 'C'
+
+Then infer cancellation side from bid_order_id / ask_order_id when appropriate.
+
+Do NOT try to use one universal cancellation rule across both exchanges.
+
+
+=====================================================================
+5. KEY DATA-HANDLING WARNINGS
+=====================================================================
+
+1. Do not infer exchange from the suffix alone
+----------------------------------------------
+
+The dataset documentation explicitly warns that .SH/.SZ suffixes are not
+universally reliable across all instruments in the archive. Some Shanghai
+non-stock instruments can appear with a .SZ suffix.
+
+For this project, if restricting to known ordinary A-shares, use a
+date-appropriate security master / stock universe rather than suffix alone.
+
+
+2. ex_code is not an exchange code
+----------------------------------
+
+Despite its name, ex_code is the bare security code, such as "000001".
+It is not a venue identifier.
+
+
+3. Price scaling
+----------------
+
+For ordinary stock price fields:
+
+    price_CNY = raw_price / 10000
+
+This applies to stock prices and quote price levels.
+
+Do NOT blindly apply the same scaling factor to:
+    amount
+    iopv
+    other derived/non-price fields
+
+
+4. Historical SZ order_type changes
+-----------------------------------
+
+Never hard-code:
+
+    SZ limit order == order_type '0' only
+
+Use the dataset rule:
+
+    order_type IN ('0', '2')
+
+for historical Shenzhen limit-order filtering unless a narrower mapping has
+been explicitly validated for the exact date.
+
+
+5. SH and SZ order semantics are not identical
+----------------------------------------------
+
+The Hugging Face documentation states:
+
+    Shenzhen publishes original orders.
+
+    Shanghai order messages can describe the remaining quantity after fills.
+
+This matters for any feature that attempts to reconstruct:
+    original submitted size,
+    residual order size,
+    order lifetime,
+    fill ratio,
+    cancellation ratio.
+
+
+6. Trade stream is not "executions only"
+----------------------------------------
+
+For Shenzhen:
+
+    trade_code = 'C'
+
+rows are cancellation records.
+
+Therefore:
+
+    COUNT(*) in 逐笔成交.parquet
+
+is NOT equal to the number of actual executions.
+
+
+7. IDs are sequence identifiers, not identities
+-----------------------------------------------
+
+order_id, ex_order_id, trade_id, ask_order_id and bid_order_id are source or
+exchange sequence/order identifiers.
+
+They do not identify:
+    investor,
+    account,
+    broker,
+    institution.
+
+Use them only within the proper date/security/venue context.
+
+
+8. Lifecycle matching is possible but not guaranteed lossless
+-------------------------------------------------------------
+
+The archive may support matching:
+
+    order -> execution(s) -> cancellation
+
+when the relevant messages exist.
+
+However, the dataset explicitly does NOT guarantee:
+    lossless order-book reconstruction,
+    complete queue positions,
+    exchange-feed receive timestamps.
+
+
+9. Validate session coverage by date
+------------------------------------
+
+The existence of all three files does not guarantee complete intraday coverage.
+
+Before using each date, check:
+    first timestamp,
+    last timestamp,
+    row counts,
+    selected-symbol coverage.
+
+For the current project, this should be done specifically for the
+09:30-10:00 research window.
+
+
+10. Keep raw categories during extraction
+-----------------------------------------
+
+Do not discard raw fields during the first extraction.
+
+Recommended raw fields to retain:
+
+Orders:
+    order_type
+    order_code
+    order_id
+    ex_order_id
+
+Trades:
+    trade_code
+    order_code
+    bs_flag
+    ask_order_id
+    bid_order_id
+
+You can create normalized fields later, e.g.:
+
+    venue
+    event_type        # add / cancel / execution
+    side              # buy / sell
+    price_type        # limit / market / own-side-best
+    is_cancel
+    is_execution
+
+while preserving the original raw codes for auditability.
+
+
+=====================================================================
+6. RECOMMENDED NORMALIZED EVENT MAPPING FOR THIS PROJECT
+=====================================================================
+
+This is a clean internal representation to use after raw extraction.
+
+Shanghai orders
+---------------
+
+raw:
+    order_type='A', order_code='B'
+normalized:
+    event_type='add'
+    side='B'
+
+raw:
+    order_type='A', order_code='S'
+normalized:
+    event_type='add'
+    side='S'
+
+raw:
+    order_type='D', order_code='B'
+normalized:
+    event_type='cancel'
+    side='B'
+
+raw:
+    order_type='D', order_code='S'
+normalized:
+    event_type='cancel'
+    side='S'
+
+
+Shenzhen orders
+---------------
+
+raw:
+    order_type in ('0', '2'), order_code='B'/'S'
+normalized:
+    event_type='add'
+    price_type='limit'
+    side=order_code
+
+raw:
+    order_type='1'
+normalized:
+    event_type='add'
+    price_type='market'
+    side=order_code
+
+raw:
+    order_type='U'
+normalized:
+    event_type='add'
+    price_type='own_side_best'
+    side=order_code
+
+
+Shenzhen trade stream
+---------------------
+
+raw:
+    trade_code='C'
+normalized:
+    event_type='cancel'
+
+raw:
+    trade_code!='C'
+normalized:
+    event_type='execution'
+    side=bs_flag, after date-level validation
+
+
+=====================================================================
+7. CONFIDENCE LEVELS
+=====================================================================
+
+High confidence / explicitly supported by Hugging Face documentation
+--------------------------------------------------------------------
+- Three separate quote/order/trade schemas.
+- time format = HHMMSSmmm, Asia/Shanghai.
+- Stock price fields divided by 10000.
+- order_code B/S direction.
+- SH cancellation: order.order_type == 'D'.
+- SZ cancellation: trade.trade_code == 'C'.
+- Historical SZ limit-order filter must include ('0','2').
+- Suffix is not a universally reliable venue identifier.
+- IDs are sequence identifiers, not accounts/brokers.
+- Archive does not guarantee lossless order-book reconstruction.
+
+High confidence / supported by observed sample plus standard L2 documentation
+-----------------------------------------------------------------------------
+- SH order_type 'A' = add/new order.
+- SZ order_type '1' = market order.
+- SZ order_type 'U' = own-side-best order.
+- The observed 2026-08-28 SZ order_type '0' records are limit orders.
+
+Sample-supported; revalidate before generalizing across all dates
+-----------------------------------------------------------------
+- trade_code '0' behaves as an ordinary SZ execution on 2026-08-28.
+- trade.bs_flag B/S behaves as vendor-provided execution direction.
+- quote.num_trades appears cumulative in the observed sample.
+- quote.volume and quote.amount behave as interval values between snapshots.
+
+
+=====================================================================
+End of reference
+=====================================================================

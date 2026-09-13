@@ -216,3 +216,46 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# =============================================================================
+# Project data
+# =============================================================================
+# Source data comes from the gated Hugging Face dataset
+# venvoo/china-a-share-l2-level2-limit-order-book-tick-data, which is licensed
+# research-use-only: the compilation license does not transfer any rights in
+# the underlying market data. Nothing that contains raw or derived market-data
+# values is committed here. Reproduce it locally with src/download_data.py
+# after requesting dataset access. See README.md -> "Data access".
+
+# Raw Level-2 Parquet (quotes / orders / trades), ~1 GB per week of data
+data/raw/
+*.parquet
+
+# Derived market-data matrices: forward-return targets and factor values.
+# These are per-stock, per-minute values derived from the licensed source
+# data, so they are treated the same as the raw data.
+data/*.pkl
+data/factors/
+*.pkl
+
+# Inspection dumps: these embed verbatim quote/order/trade rows
+data/inspect_sample_*.txt
+
+# DuckDB scratch space
+data/duckdb_tmp/
+*.duckdb
+*.duckdb.wal
+
+# Hugging Face cache, if it is ever pointed inside the repo
+.cache/
+hf_cache/
+
+# -----------------------------------------------------------------------------
+# Intentionally tracked (aggregate research output and metadata only, no
+# per-stock market-data values):
+#   README.md, LICENSE, src/*.py
+#   results/*                              IC statistics and plots
+#   data/csi500_wind_codes_20260820.txt    index membership (ticker list)
+#   data/data_reference.txt                schema notes written for this repo
+#   data/download_summary_*.txt            row counts / integrity checks
+# -----------------------------------------------------------------------------

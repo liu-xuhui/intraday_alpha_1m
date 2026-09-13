@@ -1,0 +1,568 @@
+CSI 500 Level-2 Raw Data Download Summary
+==============================================================================
+Generated UTC: 2026-09-12T23:09:38.259537+00:00
+Hugging Face repo: venvoo/china-a-share-l2-level2-limit-order-book-tick-data
+Pinned revision: 0121dd0a60756d74efb23bf19a2876af3565ee3b
+Universe file: data/csi500_wind_codes_20260820.txt
+Universe size: 500 unique Wind codes
+Date range: 2026-08-20 to 2026-08-28
+Trading days requested: 20260820, 20260821, 20260824, 20260825, 20260826, 20260827, 20260828
+Window: 09:30:00.000 <= time < 10:00:00.000 Asia/Shanghai
+Output directory: data/raw
+
+Preflight remote-file check: PASS
+  All 21 required source files exist.
+
+Important interpretation:
+  Missing symbols in an individual stream are reported, not automatically
+  treated as extraction failure. A CSI 500 constituent can be suspended,
+  or a symbol can have no order/trade events in a particular window.
+  Hard PASS/FAIL checks concern file existence, row-copy integrity, schema,
+  requested date/time bounds, and universe contamination.
+
+
+==============================================================================
+DATE 20260820
+==============================================================================
+
+[QUOTES] PASS
+  source: 20260820/行情.parquet
+  local: data/raw/20260820/quotes.parquet
+  size: 22.96 MiB (24,076,482 bytes)
+  rows: 297,687
+  DuckDB COPY rows: 297,687
+  symbols with rows: 499/500
+  missing universe symbols: 1
+  missing list: 002155.SZ
+  first time: 09:30:00.000
+  last time:  09:59:59.000
+  columns: 66
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+  quote coverage diagnostics (warning-only):
+    active symbols: 499
+    rows/symbol min: 465
+    rows/symbol median: 600.0
+    rows/symbol max: 600
+    symbols starting after 09:30:15: 0
+    symbols ending before 09:59:45: 0
+    symbols with fewer than 400 quote snapshots: 0
+
+[ORDERS] PASS
+  source: 20260820/逐笔委托.parquet
+  local: data/raw/20260820/orders.parquet
+  size: 65.22 MiB (68,386,837 bytes)
+  rows: 11,938,275
+  DuckDB COPY rows: 11,938,275
+  symbols with rows: 499/500
+  missing universe symbols: 1
+  missing list: 002155.SZ
+  first time: 09:30:00.000
+  last time:  09:59:59.990
+  columns: 10
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+
+[TRADES] PASS
+  source: 20260820/逐笔成交.parquet
+  local: data/raw/20260820/trades.parquet
+  size: 62.52 MiB (65,557,233 bytes)
+  rows: 8,538,209
+  DuckDB COPY rows: 8,538,209
+  symbols with rows: 499/500
+  missing universe symbols: 1
+  missing list: 002155.SZ
+  first time: 09:30:00.000
+  last time:  09:59:59.990
+  columns: 12
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+
+==============================================================================
+DATE 20260821
+==============================================================================
+
+[QUOTES] PASS
+  source: 20260821/行情.parquet
+  local: data/raw/20260821/quotes.parquet
+  size: 22.03 MiB (23,099,728 bytes)
+  rows: 297,460
+  DuckDB COPY rows: 297,460
+  symbols with rows: 499/500
+  missing universe symbols: 1
+  missing list: 002155.SZ
+  first time: 09:30:00.000
+  last time:  09:59:59.000
+  columns: 66
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+  quote coverage diagnostics (warning-only):
+    active symbols: 499
+    rows/symbol min: 450
+    rows/symbol median: 600.0
+    rows/symbol max: 600
+    symbols starting after 09:30:15: 0
+    symbols ending before 09:59:45: 0
+    symbols with fewer than 400 quote snapshots: 0
+
+[ORDERS] PASS
+  source: 20260821/逐笔委托.parquet
+  local: data/raw/20260821/orders.parquet
+  size: 58.87 MiB (61,732,660 bytes)
+  rows: 10,573,697
+  DuckDB COPY rows: 10,573,697
+  symbols with rows: 499/500
+  missing universe symbols: 1
+  missing list: 002155.SZ
+  first time: 09:30:00.000
+  last time:  09:59:59.990
+  columns: 10
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+
+[TRADES] PASS
+  source: 20260821/逐笔成交.parquet
+  local: data/raw/20260821/trades.parquet
+  size: 56.55 MiB (59,299,314 bytes)
+  rows: 7,620,581
+  DuckDB COPY rows: 7,620,581
+  symbols with rows: 499/500
+  missing universe symbols: 1
+  missing list: 002155.SZ
+  first time: 09:30:00.000
+  last time:  09:59:59.990
+  columns: 12
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+
+==============================================================================
+DATE 20260824
+==============================================================================
+
+[QUOTES] PASS
+  source: 20260824/行情.parquet
+  local: data/raw/20260824/quotes.parquet
+  size: 22.81 MiB (23,914,173 bytes)
+  rows: 298,285
+  DuckDB COPY rows: 298,285
+  symbols with rows: 499/500
+  missing universe symbols: 1
+  missing list: 002155.SZ
+  first time: 09:30:00.000
+  last time:  09:59:59.000
+  columns: 66
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+  quote coverage diagnostics (warning-only):
+    active symbols: 499
+    rows/symbol min: 469
+    rows/symbol median: 600.0
+    rows/symbol max: 600
+    symbols starting after 09:30:15: 0
+    symbols ending before 09:59:45: 0
+    symbols with fewer than 400 quote snapshots: 0
+
+[ORDERS] PASS
+  source: 20260824/逐笔委托.parquet
+  local: data/raw/20260824/orders.parquet
+  size: 62.68 MiB (65,722,517 bytes)
+  rows: 11,352,721
+  DuckDB COPY rows: 11,352,721
+  symbols with rows: 499/500
+  missing universe symbols: 1
+  missing list: 002155.SZ
+  first time: 09:30:00.000
+  last time:  09:59:59.990
+  columns: 10
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+
+[TRADES] PASS
+  source: 20260824/逐笔成交.parquet
+  local: data/raw/20260824/trades.parquet
+  size: 61.40 MiB (64,385,650 bytes)
+  rows: 8,300,323
+  DuckDB COPY rows: 8,300,323
+  symbols with rows: 499/500
+  missing universe symbols: 1
+  missing list: 002155.SZ
+  first time: 09:30:00.000
+  last time:  09:59:59.990
+  columns: 12
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+
+==============================================================================
+DATE 20260825
+==============================================================================
+
+[QUOTES] PASS
+  source: 20260825/行情.parquet
+  local: data/raw/20260825/quotes.parquet
+  size: 22.38 MiB (23,465,933 bytes)
+  rows: 297,651
+  DuckDB COPY rows: 297,651
+  symbols with rows: 499/500
+  missing universe symbols: 1
+  missing list: 002155.SZ
+  first time: 09:30:00.000
+  last time:  09:59:59.000
+  columns: 66
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+  quote coverage diagnostics (warning-only):
+    active symbols: 499
+    rows/symbol min: 529
+    rows/symbol median: 600.0
+    rows/symbol max: 600
+    symbols starting after 09:30:15: 0
+    symbols ending before 09:59:45: 0
+    symbols with fewer than 400 quote snapshots: 0
+
+[ORDERS] PASS
+  source: 20260825/逐笔委托.parquet
+  local: data/raw/20260825/orders.parquet
+  size: 59.45 MiB (62,335,258 bytes)
+  rows: 10,766,694
+  DuckDB COPY rows: 10,766,694
+  symbols with rows: 499/500
+  missing universe symbols: 1
+  missing list: 002155.SZ
+  first time: 09:30:00.000
+  last time:  09:59:59.990
+  columns: 10
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+
+[TRADES] PASS
+  source: 20260825/逐笔成交.parquet
+  local: data/raw/20260825/trades.parquet
+  size: 57.40 MiB (60,189,635 bytes)
+  rows: 7,740,034
+  DuckDB COPY rows: 7,740,034
+  symbols with rows: 499/500
+  missing universe symbols: 1
+  missing list: 002155.SZ
+  first time: 09:30:00.000
+  last time:  09:59:59.990
+  columns: 12
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+
+==============================================================================
+DATE 20260826
+==============================================================================
+
+[QUOTES] PASS
+  source: 20260826/行情.parquet
+  local: data/raw/20260826/quotes.parquet
+  size: 22.53 MiB (23,619,886 bytes)
+  rows: 297,942
+  DuckDB COPY rows: 297,942
+  symbols with rows: 499/500
+  missing universe symbols: 1
+  missing list: 002155.SZ
+  first time: 09:30:00.000
+  last time:  09:59:59.000
+  columns: 66
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+  quote coverage diagnostics (warning-only):
+    active symbols: 499
+    rows/symbol min: 510
+    rows/symbol median: 600.0
+    rows/symbol max: 600
+    symbols starting after 09:30:15: 0
+    symbols ending before 09:59:45: 0
+    symbols with fewer than 400 quote snapshots: 0
+
+[ORDERS] PASS
+  source: 20260826/逐笔委托.parquet
+  local: data/raw/20260826/orders.parquet
+  size: 66.51 MiB (69,740,159 bytes)
+  rows: 10,247,348
+  DuckDB COPY rows: 10,247,348
+  symbols with rows: 499/500
+  missing universe symbols: 1
+  missing list: 002155.SZ
+  first time: 09:30:00.000
+  last time:  09:59:59.990
+  columns: 10
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+
+[TRADES] PASS
+  source: 20260826/逐笔成交.parquet
+  local: data/raw/20260826/trades.parquet
+  size: 52.65 MiB (55,211,789 bytes)
+  rows: 7,131,926
+  DuckDB COPY rows: 7,131,926
+  symbols with rows: 499/500
+  missing universe symbols: 1
+  missing list: 002155.SZ
+  first time: 09:30:00.000
+  last time:  09:59:59.990
+  columns: 12
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+
+==============================================================================
+DATE 20260827
+==============================================================================
+
+[QUOTES] PASS
+  source: 20260827/行情.parquet
+  local: data/raw/20260827/quotes.parquet
+  size: 22.07 MiB (23,142,960 bytes)
+  rows: 297,975
+  DuckDB COPY rows: 297,975
+  symbols with rows: 500/500
+  missing universe symbols: 0
+  missing list: none
+  first time: 09:30:00.000
+  last time:  09:59:59.000
+  columns: 66
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+  quote coverage diagnostics (warning-only):
+    active symbols: 500
+    rows/symbol min: 509
+    rows/symbol median: 600.0
+    rows/symbol max: 600
+    symbols starting after 09:30:15: 0
+    symbols ending before 09:59:45: 0
+    symbols with fewer than 400 quote snapshots: 0
+
+[ORDERS] PASS
+  source: 20260827/逐笔委托.parquet
+  local: data/raw/20260827/orders.parquet
+  size: 57.23 MiB (60,014,575 bytes)
+  rows: 10,176,322
+  DuckDB COPY rows: 10,176,322
+  symbols with rows: 500/500
+  missing universe symbols: 0
+  missing list: none
+  first time: 09:30:00.000
+  last time:  09:59:59.990
+  columns: 10
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+
+[TRADES] PASS
+  source: 20260827/逐笔成交.parquet
+  local: data/raw/20260827/trades.parquet
+  size: 53.53 MiB (56,127,570 bytes)
+  rows: 7,244,760
+  DuckDB COPY rows: 7,244,760
+  symbols with rows: 500/500
+  missing universe symbols: 0
+  missing list: none
+  first time: 09:30:00.000
+  last time:  09:59:59.990
+  columns: 12
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+
+==============================================================================
+DATE 20260828
+==============================================================================
+
+[QUOTES] PASS
+  source: 20260828/行情.parquet
+  local: data/raw/20260828/quotes.parquet
+  size: 22.08 MiB (23,151,672 bytes)
+  rows: 298,096
+  DuckDB COPY rows: 298,096
+  symbols with rows: 500/500
+  missing universe symbols: 0
+  missing list: none
+  first time: 09:30:00.000
+  last time:  09:59:59.000
+  columns: 66
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+  quote coverage diagnostics (warning-only):
+    active symbols: 500
+    rows/symbol min: 529
+    rows/symbol median: 600.0
+    rows/symbol max: 600
+    symbols starting after 09:30:15: 0
+    symbols ending before 09:59:45: 0
+    symbols with fewer than 400 quote snapshots: 0
+
+[ORDERS] PASS
+  source: 20260828/逐笔委托.parquet
+  local: data/raw/20260828/orders.parquet
+  size: 59.57 MiB (62,467,203 bytes)
+  rows: 10,654,601
+  DuckDB COPY rows: 10,654,601
+  symbols with rows: 500/500
+  missing universe symbols: 0
+  missing list: none
+  first time: 09:30:00.000
+  last time:  09:59:59.990
+  columns: 10
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+
+[TRADES] PASS
+  source: 20260828/逐笔成交.parquet
+  local: data/raw/20260828/trades.parquet
+  size: 57.24 MiB (60,023,584 bytes)
+  rows: 7,727,453
+  DuckDB COPY rows: 7,727,453
+  symbols with rows: 500/500
+  missing universe symbols: 0
+  missing list: none
+  first time: 09:30:00.000
+  last time:  09:59:59.990
+  columns: 12
+  checks:
+    nonempty: PASS
+    copy_count_match: PASS
+    schema_match: PASS
+    date_match: PASS
+    time_window: PASS
+    universe_only: PASS
+
+==============================================================================
+OVERALL SUMMARY
+==============================================================================
+Overall hard sanity status: PASS
+Total local rows: 132,098,040
+Total local storage: 987.69 MiB (1,035,664,818 bytes)
+Files written: 21
+Hard failures: 0
+Warnings: 15
+
+Hard failures:
+  none
+
+Warnings:
+  - 20260820 quotes: 1 universe symbols have no rows
+  - 20260820 orders: 1 universe symbols have no rows
+  - 20260820 trades: 1 universe symbols have no rows
+  - 20260821 quotes: 1 universe symbols have no rows
+  - 20260821 orders: 1 universe symbols have no rows
+  - 20260821 trades: 1 universe symbols have no rows
+  - 20260824 quotes: 1 universe symbols have no rows
+  - 20260824 orders: 1 universe symbols have no rows
+  - 20260824 trades: 1 universe symbols have no rows
+  - 20260825 quotes: 1 universe symbols have no rows
+  - 20260825 orders: 1 universe symbols have no rows
+  - 20260825 trades: 1 universe symbols have no rows
+  - 20260826 quotes: 1 universe symbols have no rows
+  - 20260826 orders: 1 universe symbols have no rows
+  - 20260826 trades: 1 universe symbols have no rows
+
+Sanity-check interpretation:
+  PASS means every requested source file existed at the pinned
+  repository revision, every local Parquet was nonempty, DuckDB's
+  copied-row count matched the locally readable row count, schemas
+  matched the known dataset schemas, all rows stayed inside the
+  requested date/time window, and no out-of-universe symbols appeared.
+
+  Warnings about missing symbols or quote-session coverage should be
+  reviewed before factor construction. They can reflect suspension or
+  genuine no-event periods, but can also reveal source-session gaps.
+
