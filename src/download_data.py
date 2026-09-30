@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 import time
 from datetime import datetime, timezone
@@ -21,21 +22,21 @@ REPO = "venvoo/china-a-share-l2-level2-limit-order-book-tick-data"
 DATA_DIR = Path("data")
 RAW_DIR = DATA_DIR / "raw"
 UNIVERSE_FILE = DATA_DIR / "csi500_wind_codes_20260820.txt"
-REPORT_FILE = DATA_DIR / "download_summary_20260820_20260828.txt"
+REPORT_FILE = DATA_DIR / "download_summary_20260907_20260915.txt"
 
-# 2026-08-20 through 2026-08-28 contains these seven A-share trading days.
+# Trading days to download. Every stream of a day is re-downloaded on each run,
+# so a day holds exactly one [START_TIME, END_TIME) window at a time.
 TRADING_DAYS = [
-    "20260820",
-    "20260821",
-    "20260824",
-    "20260825",
-    "20260826",
-    "20260827",
-    "20260828",
+    "20260907",
+    "20260908",
+    "20260909",
+    "20260910",
+    "20260911",
+    "20260914",
+    "20260915",
 ]
-
-START_TIME = 93000000   # 09:30:00.000 Asia/Shanghai
-END_TIME = 100000000    # 10:00:00.000, exclusive
+START_TIME = 103000000   # 10:30:00.000 Asia/Shanghai (HHMMSSmmm)
+END_TIME = 110000000     # 11:00:00.000, exclusive
 
 # Retry transient HTTP/Hugging Face failures.
 MAX_RETRIES = 3
@@ -127,6 +128,39 @@ def load_universe(path: Path) -> list[str]:
         raise ValueError(f"Invalid Wind-code format, examples: {bad[:10]}")
 
     return codes
+
+
+def shift_ms(clock: int, delta_ms: int) -> int:
+    """HHMMSSmmm clock shifted by delta_ms milliseconds."""
+    s = f"{int(clock):09d}"
+    total = (int(s[0:2]) * 3600 + int(s[2:4]) * 60 + int(s[4:6])) * 1000 + int(s[6:9]) + delta_ms
+    h, rem = divmod(total, 3_600_000)
+    m, rem = divmod(rem, 60_000)
+    sec, ms = divmod(rem, 1000)
+    return h * 10_000_000 + m * 100_000 + sec * 1000 + ms
+
+
+# Coverage diagnostics flag symbols whose quotes start/end >15s inside the window.
+LATE_START_TIME = shift_ms(START_TIME, 15_000)
+EARLY_END_TIME = shift_ms(END_TIME, -15_000)
+
+
+def write_window_file(day_dir: Path, revision: str) -> None:
+    """Record which clock window this day's raw files hold; the factor and
+    target builders read it so a lookback is never taken from outside it."""
+    (day_dir / "window.json").write_text(
+        json.dumps(
+            {
+                "start_time": hhmmssmmm(START_TIME),
+                "end_time": hhmmssmmm(END_TIME),
+                "end_exclusive": True,
+                "revision": revision,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
 
 def write_report(lines: list[str]) -> None:
@@ -227,9 +261,9 @@ def quote_coverage_stats(
             MIN(n) AS min_rows,
             MEDIAN(n) AS median_rows,
             MAX(n) AS max_rows,
-            SUM(CASE WHEN first_time > 93015000 THEN 1 ELSE 0 END)
+            SUM(CASE WHEN first_time > {LATE_START_TIME} THEN 1 ELSE 0 END)
                 AS late_start_symbols,
-            SUM(CASE WHEN last_time < 95945000 THEN 1 ELSE 0 END)
+            SUM(CASE WHEN last_time < {EARLY_END_TIME} THEN 1 ELSE 0 END)
                 AS early_end_symbols,
             SUM(CASE WHEN n < 400 THEN 1 ELSE 0 END)
                 AS low_row_symbols
@@ -297,9 +331,9 @@ def main() -> None:
         f"Pinned revision: {revision}",
         f"Universe file: {UNIVERSE_FILE}",
         f"Universe size: {len(universe)} unique Wind codes",
-        "Date range: 2026-08-20 to 2026-08-28",
+        f"Date range: {min(TRADING_DAYS)} to {max(TRADING_DAYS)}",
         f"Trading days requested: {', '.join(TRADING_DAYS)}",
-        "Window: 09:30:00.000 <= time < 10:00:00.000 Asia/Shanghai",
+        f"Window: {hhmmssmmm(START_TIME)} <= time < {hhmmssmmm(END_TIME)} Asia/Shanghai",
         f"Output directory: {RAW_DIR}",
         "",
         "Preflight remote-file check: PASS",
@@ -352,6 +386,10 @@ def main() -> None:
     for day in TRADING_DAYS:
         day_dir = RAW_DIR / day
         day_dir.mkdir(parents=True, exist_ok=True)
+        # The day's files are about to be replaced; its window record is only
+        # rewritten once every stream has downloaded cleanly.
+        (day_dir / "window.json").unlink(missing_ok=True)
+        failures_before_day = len(hard_failures)
 
         report.extend(
             [
@@ -504,11 +542,11 @@ def main() -> None:
                         f"    rows/symbol median: {q['median_rows']:.1f}",
                         f"    rows/symbol max: {q['max_rows']}",
                         (
-                            "    symbols starting after 09:30:15: "
+                            f"    symbols starting after {hhmmssmmm(LATE_START_TIME)}: "
                             f"{q['late_start_symbols']}"
                         ),
                         (
-                            "    symbols ending before 09:59:45: "
+                            f"    symbols ending before {hhmmssmmm(EARLY_END_TIME)}: "
                             f"{q['early_end_symbols']}"
                         ),
                         (
@@ -535,6 +573,9 @@ def main() -> None:
                 f"{stats['n_symbols']} symbols | "
                 f"{human_size(size_bytes)} | {status}"
             )
+
+        if len(hard_failures) == failures_before_day:
+            write_window_file(day_dir, revision)
 
     con.close()
 

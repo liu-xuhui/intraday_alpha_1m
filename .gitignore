@@ -250,11 +250,25 @@ data/duckdb_tmp/
 .cache/
 hf_cache/
 
+# Factor construction code is kept private.
+src/build_lob_composite_factor.py
+
+# Research output: nothing under results/ is committed except the figures that
+# README.md embeds. "/results/**/" re-includes directories so git can descend
+# to the whitelisted files; every file stays ignored unless listed below.
+/results/**
+!/results/**/
+!/results/target_1min/20260907-20260915_7d_1030_29m/factors/ic_ati_volume_8s.png
+!/results/target_1min/20260907-20260915_7d_1030_29m/factors/ic_lob_near_vs_deep_composite.png
+!/results/other/alpha_decay_ati_volume_8s.png
+!/results/other/alpha_decay_lob_near_vs_deep_composite.png
+
 # -----------------------------------------------------------------------------
-# Intentionally tracked (aggregate research output and metadata only, no
-# per-stock market-data values):
-#   README.md, LICENSE, src/*.py
-#   results/*                              IC statistics and plots
+# Intentionally tracked (no per-stock market-data values):
+#   README.md, LICENSE
+#   src/*.py except the factor builders above (pipeline_utils, build_targets,
+#     eval_ic, plot_alpha_decay, download_data, ...)
+#   the four README figures under results/ whitelisted above
 #   data/csi500_wind_codes_20260820.txt    index membership (ticker list)
 #   data/data_reference.txt                schema notes written for this repo
 #   data/download_summary_*.txt            row counts / integrity checks
